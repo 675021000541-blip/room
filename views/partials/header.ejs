@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= locals.title || 'ระบบจองห้อง' %> - ระบบจองห้อง</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="topbar">
+  <strong>ระบบจองห้อง</strong>
+  <% if (locals.user) { %>
+    <nav>
+      <% if (can('room.read')) { %><a href="/app/rooms">ห้อง</a><% } %>
+      <% if (can('booking.read.own') || can('booking.read.all')) { %><a href="/app/bookings">การจอง</a><% } %>
+      <% if (can('booking.create')) { %><a href="/app/bookings/new">จองห้อง</a><% } %>
+      <% if (['user.manage','role.manage','permission.manage','acl.manage','log.read'].some(p => can(p))) { %><a href="/admin">ส่วน Admin</a><% } %>
+    </nav>
+    <span><%= user.full_name %> (<%= user.role_name %>)</span>
+    <form method="post" action="/logout"><button>ออกจากระบบ</button></form>
+  <% } %>
+</header>
+<main>

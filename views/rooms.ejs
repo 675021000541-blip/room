@@ -1,0 +1,62 @@
+<%- include('partials/header', { title: 'รายการห้อง' }) %>
+
+<div class="card">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+    <h2 style="margin: 0;">รายการห้องทั้งหมด</h2>
+    <% if (locals.can && can('room.create')) { %>
+      <a href="/app/rooms/new" style="background: #0f4c5c; color: white; padding: 8px 16px; border-radius: 4px; text-decoration: none; font-weight: bold; font-size: 14px;">+ เพิ่มห้อง</a>
+    <% } %>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ห้อง</th>
+        <th>ที่ตั้ง</th>
+        <th>ความจุ</th>
+        <th>รายละเอียด</th>
+        <th>สถานะ</th>
+        <th style="width: 120px;">จัดการ</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (locals.rooms && rooms.length > 0) { %>
+        <% rooms.forEach(r => { %>
+          <tr>
+            <td><strong><%= r.name %></strong></td>
+            <td><%= r.building || '-' %></td>
+            <td><%= r.capacity %> คน</td>
+            <td><%= r.description || '-' %></td>
+            <td>
+              <% if (r.is_active) { %>
+                <span style="color: #28a745; font-weight: bold;">เปิด</span>
+              <% } else { %>
+                <span style="color: #dc3545; font-weight: bold;">ปิด</span>
+              <% } %>
+            </td>
+            <td>
+              <% if (locals.can && can('room.update')) { %>
+                <a href="/app/rooms/<%= r.id %>/edit" style="margin-right: 8px;">แก้ไข</a>
+              <% } %>
+              <% if (locals.can && can('room.delete')) { %>
+                <form method="post" action="/app/rooms/<%= r.id %>/delete" onsubmit="return confirm('ยืนยันการลบห้องนี้?')" style="display:inline;">
+                  <button type="submit" style="background: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px;">ลบ</button>
+                </form>
+              <% } %>
+            </td>
+          </tr>
+        <% }) %>
+      <% } else { %>
+        <tr>
+          <td colspan="6" style="text-align: center; color: #6c757d;">ยังไม่มีข้อมูลห้องในระบบ</td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+
+  <div style="margin-top: 15px;">
+    <a href="/app">&larr; กลับหน้าหลัก</a>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

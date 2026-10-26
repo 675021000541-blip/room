@@ -1,0 +1,102 @@
+<%- include('partials/header', { title: 'รายการการจอง' }) %>
+
+<div style="max-width: 900px; margin: 0 auto;">
+  <h2 style="margin-bottom: 20px;"><%= locals.all ? 'การจองทั้งหมด' : 'การจองของฉัน' %></h2>
+
+  <% if (locals.bookings && bookings.length > 0) { %>
+    <% bookings.forEach(b => { %>
+      <div class="card" style="margin-bottom: 20px;">
+        <!-- ส่วนหัวรายการ -->
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 12px;">
+          <h3 style="margin: 0; color: #004d61;">
+            #<%= b.id %> <%= b.room_name %>
+          </h3>
+          <div>
+            <% if (b.status === 'pending') { %><span style="background: #fff3cd; color: #856404; padding: 4px 10px; border-radius: 12px; font-weight: bold; font-size: 13px;">รออนุมัติ</span>
+            <% } else if (b.status === 'approved') { %><span style="background: #d4edda; color: #155724; padding: 4px 10px; border-radius: 12px; font-weight: bold; font-size: 13px;">อนุมัติแล้ว</span>
+            <% } else if (b.status === 'completed') { %><span style="background: #cce5ff; color: #004085; padding: 4px 10px; border-radius: 12px; font-weight: bold; font-size: 13px;">เสร็จสิ้น</span>
+            <% } else if (b.status === 'rejected') { %><span style="background: #f8d7da; color: #721c24; padding: 4px 10px; border-radius: 12px; font-weight: bold; font-size: 13px;">ปฏิเสธ</span>
+            <% } else if (b.status === 'cancelled') { %><span style="background: #e2e3e5; color: #383d41; padding: 4px 10px; border-radius: 12px; font-weight: bold; font-size: 13px;">ยกเลิกแล้ว</span>
+            <% } else { %><span style="padding: 4px 10px; border-radius: 12px; font-size: 13px;"><%= b.status %></span><% } %>
+          </div>
+        </div>
+
+        <!-- รายละเอียดการจอง -->
+        <div style="font-size: 14px; line-height: 1.6; color: #333;">
+          <p style="margin: 4px 0;"><strong>ผู้จอง:</strong> <%= b.requester || b.full_name %></p>
+          <p style="margin: 4px 0;"><strong>ช่วงเวลา:</strong> 
+            <%= new Date(b.start_time).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' }) %> 
+            ถึง 
+            <%= new Date(b.end_time).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' }) %>
+          </p>
+          <p style="margin: 4px 0;"><strong>วัตถุประสงค์:</strong> <%= b.purpose || '-' %></p>
+          <% if (b.review_note) { %>
+            <p style="margin: 4px 0; color: #d9534f;"><strong>หมายเหตุ:</strong> <%= b.review_note %></p>
+          <% } %>
+        </div>
+
+        <!-- รายการไฟล์แนบ -->
+        <% const bFiles = locals.files ? files.filter(f => f.booking_id === b.id) : []; %>
+        <% if (bFiles.length > 0) { %>
+          <div style="margin-top: 15px; padding-top: 10px; border-top: 1px dashed #ddd;">
+            <strong style="font-size: 13px;">ไฟล์แนบ:</strong>
+            <ul style="margin: 5px 0 0 20px; padding: 0; font-size: 13px;">
+              <% bFiles.forEach(f => { %>
+                <li style="margin-bottom: 4px;">
+                  <% if (locals.can && can('file.read')) { %>
+                    <a href="/app/files/<%= f.id %>" target="_blank" style="color: #0056b3; text-decoration: underline;"><%= f.original_name %></a>
+                    <a href="/app/files/<%= f.id %>?download=1" style="color: #6c757d; font-size: 12px;">[ดาวน์โหลด]</a>
+                  <% } else { %>
+                    <%= f.original_name %>
+                  <% } %>
+                  (<%= Math.ceil(f.size_bytes / 1024) %> KB)
+                  <% if (locals.can && can('file.delete')) { %>
+                    <form method="post" action="/app/files/<%= f.id %>/delete" onsubmit="return confirm('ยืนยันการลบไฟล์?')" style="display:inline; margin-left: 5px;">
+                      <button type="submit" style="background: none; border: none; color: #dc3545; cursor: pointer; text-decoration: underline; font-size: 12px; padding: 0;">[ลบ]</button>
+                    </form>
+                  <% } %>
+                </li>
+              <% }) %>
+            </ul>
+          </div>
+        <% } %>
+
+        <!-- ฟอร์มแนบไฟล์ -->
+        <% const isMine = locals.user && b.user_id === user.id; %>
+        <% if (locals.can && can('file.upload') && (isMine || locals.all)) { %>
+          <div style="margin-top: 15px; background: #f8f9fa; padding: 10px; border-radius: 6px; border: 1px solid #e9ecef;">
+            <form method="post" action="/app/bookings/<%= b.id %>/files" enctype="multipart/form-data" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+              <input type="file" name="file" accept=".jpg,.jpeg,.png,.pdf" required style="font-size: 13px;">
+              <button type="submit" style="background: #004d61; color: white; border: none; padding: 5px 12px; border-radius: 4px; font-size: 13px; cursor: pointer;">แนบไฟล์</button>
+              <span style="font-size: 12px; color: #6c757d;">(JPG/PNG/PDF ไม่เกิน 2 MB)</span>
+            </form>
+          </div>
+        <% } %>
+
+        <!-- ปุ่มดำเนินการ (อนุมัติ / ปฏิเสธ / ยกเลิก) -->
+        <div style="margin-top: 15px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+          <% if (locals.can && can('booking.approve') && b.status === 'pending') { %>
+            <form method="post" action="/app/bookings/<%= b.id %>/review" style="display: flex; gap: 8px; align-items: center; width: 100%;">
+              <input type="text" name="note" placeholder="หมายเหตุการพิจารณา" maxlength="200" style="flex: 1; padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px;">
+              <button type="submit" name="decision" value="approved" style="background: #28a745; color: white; border: none; padding: 6px 14px; border-radius: 4px; font-size: 13px; cursor: pointer; font-weight: bold;">อนุมัติ</button>
+              <button type="submit" name="decision" value="rejected" style="background: #dc3545; color: white; border: none; padding: 6px 14px; border-radius: 4px; font-size: 13px; cursor: pointer; font-weight: bold;">ปฏิเสธ</button>
+            </form>
+          <% } %>
+
+          <% if (locals.can && can('booking.cancel.own') && isMine && ['pending', 'approved'].includes(b.status)) { %>
+            <form method="post" action="/app/bookings/<%= b.id %>/cancel" onsubmit="return confirm('ยืนยันการยกเลิกการจอง?')">
+              <button type="submit" style="background: #6c757d; color: white; border: none; padding: 6px 14px; border-radius: 4px; font-size: 13px; cursor: pointer;">ยกเลิกการจอง</button>
+            </form>
+          <% } %>
+        </div>
+
+      </div>
+    <% }) %>
+  <% } else { %>
+    <div class="card" style="text-align: center; padding: 30px;">
+      <p style="color: #6c757d; margin: 0;">ยังไม่มีรายการจองในระบบ</p>
+    </div>
+  <% } %>
+</div>
+
+<%- include('partials/footer') %>

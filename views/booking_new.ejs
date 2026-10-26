@@ -1,0 +1,37 @@
+<%- include('partials/header', { title: 'ส่งคำขอจองห้อง' }) %>
+
+<div class="card" style="max-width: 500px; margin: 20px auto;">
+  <h2 style="margin-bottom: 20px; color: #004d61;">ส่งคำขอจองห้อง</h2>
+  
+  <form method="post" action="/app/bookings">
+    <p>
+      <label><strong>ห้อง:</strong></label><br>
+      <select name="room_id" required style="width: 100%; padding: 8px; margin-top: 5px;">
+        <% if (locals.rooms) { %>
+          <% rooms.forEach(r => { %>
+            <option value="<%= r.id %>"><%= r.name %> (<%= r.capacity %> คน)</option>
+          <% }) %>
+        <% } %>
+      </select>
+    </p>
+
+    <p>
+      <label><strong>วัตถุประสงค์:</strong></label><br>
+      <input type="text" name="purpose" required maxlength="500" placeholder="ระบุวัตถุประสงค์การใช้ห้อง" style="width: 100%; padding: 8px; margin-top: 5px;">
+    </p>
+
+    <p>
+      <label><strong>เริ่ม:</strong></label><br>
+      <input type="datetime-local" name="start" required style="width: 100%; padding: 8px; margin-top: 5px;">
+    </p>
+
+    <p>
+      <label><strong>สิ้นสุด:</strong></label><br>
+      <input type="datetime-local" name="end" required style="width: 100%; padding: 8px; margin-top: 5px;">
+    </p>
+
+    <button type="submit" style="background: #004d61; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px;">ส่งคำขอ</button>
+  </form>
+</div>
+
+<%- include('partials/footer') %>

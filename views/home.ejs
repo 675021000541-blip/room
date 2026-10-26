@@ -1,0 +1,11 @@
+<%- include('partials/header', { title: 'หน้าหลัก' }) %>
+<div class="card">
+  <% if (locals.user) { %>
+    <h2>สวัสดี <%= user.full_name %></h2>
+    <p>บทบาท: <%= user.role_name %></p>
+  <% } else { %>
+    <h2>สวัสดีผู้ใช้งาน</h2>
+  <% } %>
+  <p>เลือกเมนูจากแถบด้านบนได้เลย</p>
+</div>
+<%- include('partials/footer') %>

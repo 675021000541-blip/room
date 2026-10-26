@@ -1,0 +1,40 @@
+<%- include('partials/header', { title: 'ส่วนผู้ดูแลระบบ' }) %>
+
+<div class="card">
+  <h2>ส่วน Admin</h2>
+  <p style="color: #6c757d; margin-bottom: 20px;">เลือกเมนูการจัดการระบบที่ต้องการ:</p>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-bottom: 20px;">
+    <% if (locals.can && can('user.manage')) { %>
+      <a href="/admin/users" style="display: block; padding: 16px; background: #f8f9fa; border: 1px solid #d9e0e7; border-radius: 6px; text-decoration: none; font-weight: bold; color: #0f4c5c; text-align: center;">
+        จัดการผู้ใช้
+      </a>
+    <% } %>
+    <% if (locals.can && can('role.manage')) { %>
+      <a href="/admin/roles" style="display: block; padding: 16px; background: #f8f9fa; border: 1px solid #d9e0e7; border-radius: 6px; text-decoration: none; font-weight: bold; color: #0f4c5c; text-align: center;">
+        จัดการ Role
+      </a>
+    <% } %>
+    <% if (locals.can && can('permission.manage')) { %>
+      <a href="/admin/permissions" style="display: block; padding: 16px; background: #f8f9fa; border: 1px solid #d9e0e7; border-radius: 6px; text-decoration: none; font-weight: bold; color: #0f4c5c; text-align: center;">
+        🛡️ จัดการ Permission
+      </a>
+    <% } %>
+    <% if (locals.can && can('acl.manage')) { %>
+      <a href="/admin/acl" style="display: block; padding: 16px; background: #f8f9fa; border: 1px solid #d9e0e7; border-radius: 6px; text-decoration: none; font-weight: bold; color: #0f4c5c; text-align: center;">
+        ตาราง ACL
+      </a>
+    <% } %>
+    <% if (locals.can && can('log.read')) { %>
+      <a href="/admin/logs" style="display: block; padding: 16px; background: #f8f9fa; border: 1px solid #d9e0e7; border-radius: 6px; text-decoration: none; font-weight: bold; color: #0f4c5c; text-align: center;">
+        ดู Log
+      </a>
+    <% } %>
+  </div>
+
+  <div>
+    <a href="/app">&larr; กลับหน้าหลัก</a>
+  </div>
+</div>
+
+<%- include('partials/footer') %>
