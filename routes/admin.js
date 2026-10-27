@@ -13,8 +13,6 @@ router.get('/', requirePermission('user.manage', 'role.manage', 'permission.mana
   res.render('admin_index');
 });
 
-/* ---------------- ผู้ใช้ ---------------- */
-// กันไม่ให้ไม่เหลือ Admin ที่ใช้งานได้
 async function noOtherAdmin(userId) {
   const r = await pool.query(
     `SELECT count(*)::int AS n FROM users u JOIN roles r ON r.id = u.role_id
@@ -75,7 +73,6 @@ router.post('/users', requirePermission('user.manage'), wrap(async (req, res) =>
   }
 }));
 
-// เปลี่ยน Role / เปิด-ปิดบัญชี / เปลี่ยนรหัสผ่าน
 router.post('/users/:id/', requirePermission('user.manage'), wrap(async (req, res) => {
   const id = parseInt(req.params.id, 10);
   const active = req.body.is_active === 'on';
@@ -95,12 +92,10 @@ router.post('/users/:id/', requirePermission('user.manage'), wrap(async (req, re
   res.redirect('/admin/users');
 }));
 
-// ดักกรณีพิมพ์ URL /admin/users/:id/delete บนเบราว์เซอร์ตรงๆ (GET)
 router.get('/users/:id/delete', requirePermission('user.manage'), (req, res) => {
   res.redirect('/admin/users');
 });
 
-// ลบผู้ใช้ (POST)
 router.post('/users/:id/delete', requirePermission('user.manage'), wrap(async (req, res) => {
   const id = parseInt(req.params.id, 10);
   if (id === req.user.id) return msg(res, 400, 'ลบบัญชีของตนเองไม่ได้', '/admin/users');
@@ -119,7 +114,6 @@ router.post('/users/:id/delete', requirePermission('user.manage'), wrap(async (r
   }
 }));
 
-/* ---------------- Role ---------------- */
 router.get('/roles', requirePermission('role.manage'), wrap(async (req, res) => {
   const roles = (await pool.query(
     `SELECT r.*, (SELECT count(*) FROM users u WHERE u.role_id = r.id)::int AS n
@@ -181,7 +175,6 @@ router.post('/roles/:id/delete', requirePermission('role.manage'), wrap(async (r
   res.redirect('/admin/roles');
 }));
 
-/* ---------------- Permission ---------------- */
 const PERM_RE = /^[a-z_]+(\.[a-z_]+)+$/;   // รูปแบบ resource.action
 
 router.get('/permissions', requirePermission('permission.manage'), wrap(async (req, res) => {
@@ -239,7 +232,6 @@ router.post('/permissions/:id/delete', requirePermission('permission.manage'), w
   res.redirect('/admin/permissions');
 }));
 
-/* ---------------- ตาราง ACL (Role × Permission) ---------------- */
 router.get('/acl', requirePermission('acl.manage'), wrap(async (req, res) => {
   const roles = (await pool.query('SELECT * FROM roles ORDER BY id')).rows;
   const perms = (await pool.query('SELECT * FROM permissions ORDER BY name')).rows;
@@ -273,7 +265,6 @@ router.get('/acl', requirePermission('acl.manage'), wrap(async (req, res) => {
     </script>`);
 }));
 
-/* ---------------- Log ---------------- */
 router.get('/logs', requirePermission('log.read'), wrap(async (req, res) => {
   const f = {
     from: req.query.from, to: req.query.to,

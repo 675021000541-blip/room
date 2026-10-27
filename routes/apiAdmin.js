@@ -10,7 +10,6 @@ router.get('/users', requirePermission('user.manage'), wrap(async (req, res) => 
   res.json(r.rows);
 }));
 
-// เพิ่ม/ถอน Permission ของ Role   body: { role_id, permission_id, granted }
 router.post('/acl', requirePermission('acl.manage'), wrap(async (req, res) => {
   const roleId = parseInt(req.body.role_id, 10);
   const permId = parseInt(req.body.permission_id, 10);

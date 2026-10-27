@@ -5,7 +5,6 @@ const { esc, wrap } = require('../helpers');
 
 const router = express.Router();
 
-// ถ้า :id ไม่ใช่ตัวเลข ให้ตอบ 404 ทันที
 router.param('id', (req, res, next, id) => {
   if (!/^\d+$/.test(id)) return res.status(404).send('ไม่พบหน้าที่ต้องการ');
   next();
@@ -25,7 +24,6 @@ function roomForm(room, action, err = '') {
     </form>`;
 }
 
-// ตรวจข้อมูลห้องฝั่ง Server
 function readRoom(body) {
   const v = {
     name: String(body.name || '').trim(),
@@ -40,7 +38,6 @@ function readRoom(body) {
   return { v, err };
 }
 
-// ✅ รายการห้อง (ดึงข้อมูลแล้วส่งให้ views/rooms.ejs แสดงผลอย่างสวยงาม)
 router.get('/rooms', requirePermission('room.read'), wrap(async (req, res) => {
   const manage = req.can('room.update') || req.can('room.delete');
   const r = await pool.query(`SELECT * FROM rooms ${manage ? '' : 'WHERE is_active'} ORDER BY id`);
@@ -89,7 +86,6 @@ router.post('/rooms/:id/delete', requirePermission('room.delete'), wrap(async (r
   }
 }));
 
-// เจ้าหน้าที่ปรับสถานะเป็น "เสร็จสิ้น" (เฉพาะรายการที่อนุมัติแล้ว)
 router.post('/bookings/:id/complete', requirePermission('booking.update_status'), wrap(async (req, res) => {
   const id = parseInt(req.params.id, 10);
   const r = await pool.query('SELECT status FROM bookings WHERE id = $1', [id]);

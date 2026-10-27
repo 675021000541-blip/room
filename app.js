@@ -20,7 +20,6 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ดักจับ Error ป้องกัน Node เด้งดับเมื่อ PostgreSQL มีปัญหา
 const sessionStore = new PgStore({ pool, createTableIfMissing: true });
 sessionStore.on('error', (err) => {
   console.error(' Connect-Pg-Simple Session Error:', err.message);
@@ -48,12 +47,14 @@ app.use(activityLogger);
 app.get('/', (req, res) => res.redirect('/app'));
 app.use(require('./routes/auth'));
 
-// โหลด Routes หลัก และ Routes จัดการห้อง
+
 app.use('/app', requireLogin, require('./routes/main'));
 app.use('/app', requireLogin, require('./routes/manage'));
 
 app.use('/admin', requireLogin, require('./routes/admin'));
 app.use('/api/admin', requireLogin, require('./routes/apiAdmin'));
+
+app.use('/api/bookings', requireLogin, require('./routes/bookings'));
 
 app.use((err, req, res, next) => {
   console.error(err);

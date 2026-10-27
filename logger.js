@@ -36,13 +36,11 @@ const EVENTS = [
   ['GET', /^\/app\/bookings\/export\.csv$/, 'BOOKING_EXPORT'],
 ];
 
-// middleware: เมื่อ response ส่งจบ ให้จดเหตุการณ์ตามรายการด้านบน
 function activityLogger(req, res, next) {
   res.on('finish', () => {
     const path = req.originalUrl.split('?')[0];
     console.log('FINISH', req.method, path, res.statusCode);
     const hit = EVENTS.find(([m, re]) => m === req.method && re.test(path));
-    // 401/403 ถูกจดเป็น ACCESS_DENIED ที่ middleware ตรวจสิทธิ์แล้ว
     if (!hit || res.statusCode === 401 || res.statusCode === 403) return;
     const id = (path.match(/\/(\d+)(\/|$)/) || [])[1] || null;
     let detail = 'HTTP ' + res.statusCode;
@@ -55,7 +53,6 @@ function activityLogger(req, res, next) {
 }
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
-// ค้นหา Log ตามช่วงเวลา ผู้ใช้ เหตุการณ์ ผลลัพธ์ (หน้าละ 100 แถว)
 async function queryLogs(f) {
   const where = [], p = [];
   if (DATE_RE.test(f.from || '')) { p.push(f.from); where.push(`l.created_at >= $${p.length}::date`); }

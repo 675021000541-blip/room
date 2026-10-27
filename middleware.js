@@ -1,7 +1,6 @@
 const pool = require('./db');
 const { logEvent } = require('./logger');
 
-// โหลดผู้ใช้ + สิทธิ์จากฐานข้อมูลทุก request
 async function attachUser(req, res, next) {
   try {
     req.user = null;
@@ -22,10 +21,8 @@ async function attachUser(req, res, next) {
         p.rows.forEach(x => req.perms.add(x.name));
       }
     }
-    // Admin ผ่านทุกสิทธิ์ รวมสิทธิ์ที่เพิ่มภายหลัง
     req.can = name => !!req.user && (req.user.is_admin || req.perms.has(name));
 
-    // ให้ไฟล์ .ejs ใช้ตัวแปร user และฟังก์ชัน can(...) ได้
     res.locals.user = req.user;
     res.locals.can = req.can;
     next();
@@ -45,7 +42,6 @@ function requireLogin(req, res, next) {
 function requirePermission(...names) {
   return async (req, res, next) => {
     if (names.some(n => req.can(n))) return next();
-    // จดการเข้าถึงที่ถูกปฏิเสธ
     await logEvent(req, {
       event: 'ACCESS_DENIED',
       resource: req.method + ' ' + req.originalUrl.split('?')[0],

@@ -10,12 +10,10 @@ const { logEvent } = require('../logger');
 
 const router = express.Router();
 
-// ---------- ตั้งค่าอัปโหลดไฟล์ ----------
 const UPLOAD_DIR = path.join(__dirname, '..', 'uploads');
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 2 * 1024 * 1024, files: 1 } });
 
-// ชนิดไฟล์ที่อนุญาต (ตรวจจาก Magic Bytes)
 const TYPES = [
   { mime: 'image/jpeg', ext: '.jpg', sig: [0xFF, 0xD8, 0xFF] },
   { mime: 'image/png', ext: '.png', sig: [0x89, 0x50, 0x4E, 0x47] },
@@ -31,18 +29,15 @@ async function denyOwner(req, res, detail) {
   res.status(403).send('คุณไม่มีสิทธิ์เข้าถึงรายการนี้ (403) <a href="/app">กลับ</a>');
 }
 
-// ---------- 1. หน้าหลัก ----------
 router.get('/', (req, res) => {
   res.render('home');
 });
 
-// ---------- 2. ฟอร์มจองห้อง ----------
 router.get('/bookings/new', requirePermission('booking.create'), wrap(async (req, res) => {
   const r = await pool.query('SELECT id, name, capacity FROM rooms WHERE is_active ORDER BY id');
   res.render('booking_new', { rooms: r.rows });
 }));
 
-// ---------- 3. บันทึกคำขอจอง ----------
 router.post('/bookings', requirePermission('booking.create'), wrap(async (req, res) => {
   const roomId = parseInt(req.body.room_id, 10);
   const purpose = String(req.body.purpose || '').trim();
@@ -66,7 +61,6 @@ router.post('/bookings', requirePermission('booking.create'), wrap(async (req, r
   res.redirect('/app/bookings');
 }));
 
-// ---------- 4. รายการจอง ----------
 router.get('/bookings', requirePermission('booking.read.own', 'booking.read.all'), wrap(async (req, res) => {
   const all = req.can('booking.read.all');
   const r = await pool.query(
@@ -84,7 +78,6 @@ router.get('/bookings', requirePermission('booking.read.own', 'booking.read.all'
   res.render('bookings', { bookings: r.rows, files, all });
 }));
 
-// ---------- 5. อนุมัติ / ปฏิเสธ ----------
 router.post('/bookings/:id/review', requirePermission('booking.approve'), wrap(async (req, res) => {
   const id = parseInt(req.params.id, 10);
   const decision = req.body.decision;
@@ -108,7 +101,6 @@ router.post('/bookings/:id/review', requirePermission('booking.approve'), wrap(a
   res.redirect('/app/bookings');
 }));
 
-// ---------- 6. ยกเลิกการจอง ----------
 router.post('/bookings/:id/cancel', requirePermission('booking.cancel.own'), wrap(async (req, res) => {
   const id = parseInt(req.params.id, 10);
   const r = await pool.query('SELECT * FROM bookings WHERE id = $1', [id]);
@@ -120,7 +112,6 @@ router.post('/bookings/:id/cancel', requirePermission('booking.cancel.own'), wra
   res.redirect('/app/bookings');
 }));
 
-// ---------- 7. ส่งออก CSV ----------
 router.get('/bookings/export.csv', requirePermission('booking.export'), wrap(async (req, res) => {
   const r = await pool.query(
     `SELECT b.id, rm.name AS room, u.username, b.start_time, b.end_time, b.status
@@ -131,7 +122,6 @@ router.get('/bookings/export.csv', requirePermission('booking.export'), wrap(asy
   res.type('text/csv').attachment('bookings.csv').send('\uFEFF' + lines.join('\r\n'));
 }));
 
-// ---------- 8. อัปโหลดไฟล์แนบ ----------
 router.post('/bookings/:id/files',
   requirePermission('file.upload'),
   wrap(async (req, res, next) => {
@@ -183,7 +173,6 @@ router.post('/bookings/:id/files',
   })
 );
 
-// ---------- 9. ดาวน์โหลดไฟล์ ----------
 router.get('/files/:id', requirePermission('file.read'), wrap(async (req, res) => {
   const r = await pool.query(
     `SELECT f.*, b.user_id AS owner_id FROM booking_files f
@@ -203,7 +192,6 @@ router.get('/files/:id', requirePermission('file.read'), wrap(async (req, res) =
   });
 }));
 
-// ---------- 10. ลบไฟล์ ----------
 router.post('/files/:id/delete', requirePermission('file.delete'), wrap(async (req, res) => {
   const r = await pool.query(
     `SELECT f.*, b.user_id AS owner_id FROM booking_files f

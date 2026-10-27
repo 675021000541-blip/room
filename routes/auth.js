@@ -5,7 +5,6 @@ const { logEvent } = require('../logger');
 
 const router = express.Router();
 
-// หน้าเข้าสู่ระบบ (views/login.ejs)
 router.get('/login', (req, res) => {
   res.render('login');
 });
