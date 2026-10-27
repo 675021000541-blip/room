@@ -1,12 +1,20 @@
 <%- include('partials/header', { title: 'รายการการจอง' }) %>
 
 <div style="max-width: 900px; margin: 0 auto;">
-  <h2 style="margin-bottom: 20px;"><%= locals.all ? 'การจองทั้งหมด' : 'การจองของฉัน' %></h2>
+  
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h2 style="margin: 0;"><%= locals.all ? 'การจองทั้งหมด' : 'การจองของฉัน' %></h2>
+
+    <% if (locals.can && can('booking.export')) { %>
+      <a href="/app/export" style="background: #17a2b8; color: white; padding: 8px 16px; border-radius: 4px; text-decoration: none; font-size: 14px; font-weight: bold; display: inline-flex; align-items: center; gap: 6px;">
+        📊 ส่งออก CSV
+      </a>
+    <% } %>
+  </div>
 
   <% if (locals.bookings && bookings.length > 0) { %>
     <% bookings.forEach(b => { %>
       <div class="card" style="margin-bottom: 20px;">
-        <!-- ส่วนหัวรายการ -->
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 12px;">
           <h3 style="margin: 0; color: #004d61;">
             #<%= b.id %> <%= b.room_name %>
@@ -21,7 +29,6 @@
           </div>
         </div>
 
-        <!-- รายละเอียดการจอง -->
         <div style="font-size: 14px; line-height: 1.6; color: #333;">
           <p style="margin: 4px 0;"><strong>ผู้จอง:</strong> <%= b.requester || b.full_name %></p>
           <p style="margin: 4px 0;"><strong>ช่วงเวลา:</strong> 
@@ -35,7 +42,6 @@
           <% } %>
         </div>
 
-        <!-- รายการไฟล์แนบ -->
         <% const bFiles = locals.files ? files.filter(f => f.booking_id === b.id) : []; %>
         <% if (bFiles.length > 0) { %>
           <div style="margin-top: 15px; padding-top: 10px; border-top: 1px dashed #ddd;">
@@ -61,7 +67,6 @@
           </div>
         <% } %>
 
-        <!-- ฟอร์มแนบไฟล์ -->
         <% const isMine = locals.user && b.user_id === user.id; %>
         <% if (locals.can && can('file.upload') && (isMine || locals.all)) { %>
           <div style="margin-top: 15px; background: #f8f9fa; padding: 10px; border-radius: 6px; border: 1px solid #e9ecef;">
@@ -73,7 +78,6 @@
           </div>
         <% } %>
 
-        <!-- ปุ่มดำเนินการ (อนุมัติ / ปฏิเสธ / ยกเลิก) -->
         <div style="margin-top: 15px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
           <% if (locals.can && can('booking.approve') && b.status === 'pending') { %>
             <form method="post" action="/app/bookings/<%= b.id %>/review" style="display: flex; gap: 8px; align-items: center; width: 100%;">
@@ -97,6 +101,7 @@
       <p style="color: #6c757d; margin: 0;">ยังไม่มีรายการจองในระบบ</p>
     </div>
   <% } %>
+  
 </div>
 
 <%- include('partials/footer') %>

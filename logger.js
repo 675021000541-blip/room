@@ -1,6 +1,5 @@
 const pool = require('./db');
 
-// บันทึกเหตุการณ์ลงตาราง audit_logs (ห้ามส่งรหัสผ่าน/Session ID เข้ามาใน detail)
 async function logEvent(req, { event, resource = null, resourceId = null, result = 'success', detail = null, userId, usernameAttempt = null }) {
   try {
     await pool.query(
@@ -14,7 +13,6 @@ async function logEvent(req, { event, resource = null, resourceId = null, result
   }
 }
 
-// รายการ "เมธอด + URL" ที่ต้องการจด และชื่อเหตุการณ์
 const EVENTS = [
   ['POST', /^\/admin\/users$/, 'USER_CREATE'],
   ['POST', /^\/admin\/users\/\d+$/, 'USER_UPDATE'],

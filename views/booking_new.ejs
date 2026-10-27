@@ -6,7 +6,7 @@
   <form method="post" action="/app/bookings">
     <p>
       <label><strong>ห้อง:</strong></label><br>
-      <select name="room_id" required style="width: 100%; padding: 8px; margin-top: 5px;">
+      <select name="room_id" id="roomIdSelect" required style="width: 100%; padding: 8px; margin-top: 5px;">
         <% if (locals.rooms) { %>
           <% rooms.forEach(r => { %>
             <option value="<%= r.id %>"><%= r.name %> (<%= r.capacity %> คน)</option>
@@ -14,6 +14,13 @@
         <% } %>
       </select>
     </p>
+
+    <div id="occupiedTimesBox" style="background: #fff3cd; border: 1px solid #ffeeba; border-radius: 6px; padding: 12px; margin-bottom: 15px; font-size: 13px; color: #856404;">
+      <strong>⚠️ ช่วงเวลาที่ถูกจองแล้ว (อนุมัติแล้ว):</strong>
+      <ul id="occupiedTimesList" style="margin: 5px 0 0 18px; padding: 0;">
+        <li>กำลังโหลดข้อมูลช่วงเวลา...</li>
+      </ul>
+    </div>
 
     <p>
       <label><strong>วัตถุประสงค์:</strong></label><br>
@@ -33,5 +40,51 @@
     <button type="submit" style="background: #004d61; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px;">ส่งคำขอ</button>
   </form>
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const roomSelect = document.getElementById('roomIdSelect');
+    const listContainer = document.getElementById('occupiedTimesList');
+
+    async function loadOccupiedTimes(roomId) {
+      if (!roomId) return;
+      
+      listContainer.innerHTML = '<li>กำลังโหลดข้อมูลช่วงเวลา...</li>';
+
+      try {
+        const res = await fetch(`/app/bookings/approved-times/${roomId}`);
+        if (!res.ok) throw new Error('Network error');
+        
+        const data = await res.json();
+        listContainer.innerHTML = '';
+
+        if (data.length === 0) {
+          listContainer.innerHTML = '<li style="color: #28a745;">✅ ห้องนี้ยังไม่มีรายการจองที่อนุมัติ (ว่างทุกช่วงเวลา)</li>';
+        } else {
+          data.forEach(item => {
+            const startStr = new Date(item.start_time).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' });
+            const endStr = new Date(item.end_time).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' });
+            
+            const li = document.createElement('li');
+            li.style.marginTop = '4px';
+            li.innerHTML = `<strong>${startStr}</strong> ถึง <strong>${endStr}</strong>`;
+            listContainer.appendChild(li);
+          });
+        }
+      } catch (err) {
+        console.error(err);
+        listContainer.innerHTML = '<li style="color: #dc3545;">ไม่สามารถดึงข้อมูลช่วงเวลาได้</li>';
+      }
+    }
+
+    if (roomSelect.value) {
+      loadOccupiedTimes(roomSelect.value);
+    }
+
+    roomSelect.addEventListener('change', (e) => {
+      loadOccupiedTimes(e.target.value);
+    });
+  });
+</script>
 
 <%- include('partials/footer') %>

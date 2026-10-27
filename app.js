@@ -51,6 +51,7 @@ app.use(require('./routes/auth'));
 app.use('/app', requireLogin, require('./routes/main'));
 app.use('/app', requireLogin, require('./routes/manage'));
 
+app.use('/app/bookings', requireLogin, require('./routes/bookings'));
 app.use('/admin', requireLogin, require('./routes/admin'));
 app.use('/api/admin', requireLogin, require('./routes/apiAdmin'));
 
